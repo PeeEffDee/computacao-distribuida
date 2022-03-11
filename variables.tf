@@ -13,3 +13,7 @@ variable "vnet" {
 variable "vm" {
   default = "master"
 }
+
+variable "vmcount" {
+  default = 2
+}

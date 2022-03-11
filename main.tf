@@ -53,14 +53,15 @@ resource "azurerm_subnet" "internal" {
 }
 
 resource "azurerm_public_ip" "default" {
-  name                = "${var.vm}-pip"
+  count               = var.vmcount
+  name                = "AZ_VM_00-PIP-${count.index}"
   resource_group_name = azurerm_resource_group.default.name
   location            = var.location
   allocation_method   = "Static"
 }
 
 resource "azurerm_network_security_group" "default" {
-  name                = "${var.vm}-nsg"
+  name                = "rg-nsg"
   location            = var.location
   resource_group_name = azurerm_resource_group.default.name
 
@@ -78,7 +79,8 @@ resource "azurerm_network_security_group" "default" {
 }
 
 resource "azurerm_network_interface" "default" {
-  name                = "${var.vm}-nic"
+  count               = var.vmcount
+  name                = "AZ-VM-00-NIC-${count.index}"
   location            = var.location
   resource_group_name = azurerm_resource_group.default.name
 
@@ -86,22 +88,26 @@ resource "azurerm_network_interface" "default" {
     name                          = "${var.vm}-ipconfig"
     subnet_id                     = azurerm_subnet.internal.id
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.default.id
+    public_ip_address_id          = azurerm_public_ip.default.*.id[count.index]
   }
 }
 
 resource "azurerm_network_interface_security_group_association" "default" {
-  network_interface_id      = azurerm_network_interface.default.id
+  count                     = var.vmcount
+  network_interface_id      = azurerm_network_interface.default[count.index].id
   network_security_group_id = azurerm_network_security_group.default.id
 }
 
 resource "azurerm_linux_virtual_machine" "main" {
-  name                  = var.vm
-  location              = var.location
-  admin_username        = "azureuser"
-  resource_group_name   = azurerm_resource_group.default.name
-  network_interface_ids = [azurerm_network_interface.default.id]
-  size                  = "Standard_DS1_v2"
+  count               = var.vmcount
+  name                = "AZ-VM-00-${count.index}"
+  location            = var.location
+  admin_username      = "azureuser"
+  resource_group_name = azurerm_resource_group.default.name
+  network_interface_ids = [
+    azurerm_network_interface.default.*.id[count.index]
+  ]
+  size = "Standard_DS1_v2"
   depends_on = [
     azurerm_network_interface_security_group_association.default,
     tls_private_key.key
