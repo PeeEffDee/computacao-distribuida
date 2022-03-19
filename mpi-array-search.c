@@ -1,4 +1,4 @@
-#define MAXSIZE 20
+#define MAXSIZE 1000
 
 #include "mpi.h"
 #include <stdio.h>
