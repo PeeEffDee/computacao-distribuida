@@ -8,13 +8,16 @@ int primo(int numero) {
    int raiz, fator;
    raiz = (int) sqrt((double) numero);
 
-   if (numero == 0 || numero == 2) 
+   if (numero == 0 || numero == 1) 
       return 0;
 
-   for(fator = 2; fator <= raiz; fator++)  
-      if (numero % fator == 0)    
+   for(fator = 2; fator <= raiz; fator++) {
+      if (numero % fator == 0) {
          return 0;
-      return 1;
+      }
+   }
+
+   return 1;
 }
 
 int main(int argc, char **argv) {
@@ -24,32 +27,39 @@ int main(int argc, char **argv) {
    start = clock();
 
    int LIMITE;
+   int INICIO;
    int my_rank, comm_sz, source; /* MPI variables */
    int total_inspected, local_init, local_end;
    int local_qtde = 0, total_qtde = 0, numero;
    
-   LIMITE = atoi(argv[1]);
+   INICIO = atoi(argv[1]);
+   LIMITE = atoi(argv[2]);
 
    MPI_Init(NULL, NULL);
    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
    MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
 
-   total_inspected = LIMITE/comm_sz;
-   local_init = total_inspected * my_rank;
-   local_end = local_init + total_inspected;
+   total_inspected = (LIMITE-INICIO)/comm_sz;
+   local_init = INICIO + total_inspected * my_rank;
+   local_end = local_init + (total_inspected-1);
+   
+   if (my_rank == comm_sz-1) local_end = LIMITE;
 
-	printf("Calculating from process %d of %d\n", my_rank, comm_sz);
-   for (numero = local_init; numero < local_end; numero ++) {  
+	// printf("Calculating from process %d of %d\n", my_rank, comm_sz);
+   for (numero = local_init; numero <= local_end; numero ++) {  
       int p = primo(numero);
-      // if (p == 1) 
-      //    printf("encontrado %d from process %d\n", numero, my_rank);
+      if (p == 1) printf("%d\n", numero);
       local_qtde += p;
    }
 
    if (my_rank != 0) {
+      // printf("%d: local_init = %d, local_end = %d\n", my_rank, local_init, local_end);
+
       MPI_Send(&local_qtde, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
    }
    else {
+      // printf("%d: local_init = %d, local_end = %d\n", my_rank, local_init, local_end);
+
       total_qtde += local_qtde;
       for (source = 1; source < comm_sz; source++) {
          MPI_Recv(&local_qtde, 1, MPI_INT, source, 0,
@@ -59,8 +69,8 @@ int main(int argc, char **argv) {
    }
     
    if (my_rank == 0) {
-      printf("Total de numeros primos ate %d: %d\n", 
-         LIMITE, total_qtde);
+      printf("Total de numeros primos de %d a %d: %d\n", 
+         INICIO, LIMITE, total_qtde);
 
       end = clock();
       cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;

@@ -23,7 +23,7 @@ int main(int argc, char **argv)
 	MPI_Comm_rank(MPI_COMM_WORLD,&myid);
 
 	if (myid == 0) { /* Open input file and initialize data */
-		if ((fp = fopen("data/rand.txt","r")) == NULL) {
+		if ((fp = fopen("data/rand.csv","r")) == NULL) {
 			printf("Can't open the input file: rand.txt\n\n");
 			exit(1);
 		}

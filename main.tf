@@ -54,7 +54,7 @@ resource "azurerm_subnet" "internal" {
 
 resource "azurerm_public_ip" "default" {
   count               = var.vmcount
-  name                = "AZ_VM_00-PIP-${count.index}"
+  name                = "vm${count.index}-PIP"
   resource_group_name = azurerm_resource_group.default.name
   location            = var.location
   allocation_method   = "Static"
@@ -80,7 +80,7 @@ resource "azurerm_network_security_group" "default" {
 
 resource "azurerm_network_interface" "default" {
   count               = var.vmcount
-  name                = "AZ-VM-00-NIC-${count.index}"
+  name                = "vm${count.index}-NIC"
   location            = var.location
   resource_group_name = azurerm_resource_group.default.name
 
@@ -100,7 +100,7 @@ resource "azurerm_network_interface_security_group_association" "default" {
 
 resource "azurerm_linux_virtual_machine" "main" {
   count               = var.vmcount
-  name                = "AZ-VM-00-${count.index}"
+  name                = "vm${count.index}"
   location            = var.location
   admin_username      = "azureuser"
   resource_group_name = azurerm_resource_group.default.name
@@ -120,8 +120,8 @@ resource "azurerm_linux_virtual_machine" "main" {
 
   source_image_reference {
     publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "16.04-LTS"
+    offer     = "0001-com-ubuntu-server-focal"
+    sku       = "20_04-lts-gen2"
     version   = "latest"
   }
 
