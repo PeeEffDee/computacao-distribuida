@@ -14,7 +14,7 @@ def convertemoeda(valor):
    url = "https://api.currencyapi.com/v3/latest?base_currency=BRL&currencies=EUR,USD"
 
    headers = CaseInsensitiveDict()
-   headers["apikey"] = "4qB3E9X9AL5gvibKZRiaC9KEJ6dexAZ6J54TztBc"
+   headers["apikey"] = ""
 
    resp = requests.get(url, headers=headers)
 
