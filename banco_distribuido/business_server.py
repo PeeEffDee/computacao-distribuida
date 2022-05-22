@@ -11,6 +11,7 @@ senhaServidor = 'pedro123'
 
 token = None
 
+# depositar para a conta existente
 @app.route("/deposito/<acnt>/<amt>", methods=["POST"])
 def deposito (acnt, amt):
     global token
@@ -35,6 +36,7 @@ def deposito (acnt, amt):
     response = jsonify({'message': 'Deposito de {} realizado com sucesso'.format(amt)}), 200
     return response
 
+# realizar saque na conta com saldo disponivel
 @app.route("/saque/<acnt>/<amt>", methods=["POST"])
 def saque (acnt, amt):
     global token
@@ -59,6 +61,7 @@ def saque (acnt, amt):
     response = jsonify({'message': 'saque de {} realizado com sucesso'.format(amt)}), 200
     return response
 
+# obter situacao do saldo
 @app.route("/saldo/<acnt>/")
 def saldo (acnt):
     global token
@@ -83,6 +86,7 @@ def saldo (acnt):
     response = jsonify({'saldo': resp.json()['saldo']})
     return response
 
+# fazer transacao entre as contas existentes e com saldo disponivel
 @app.route("/transferencia/<acnt_orig>/<acnt_dest>/<amt>", methods=["POST"])
 def transferencia(acnt_orig, acnt_dest, amt):
     global token
@@ -124,13 +128,14 @@ def obterToken():
         return False
     return resp.json()['token']
 
+# verificar se conta ta bloqueada
 def verificarContaBloqueada(acnt):
     url = "{}/obter/locked/{}/{}".format(dadosBaseUrl, nomeServidor, acnt)
     headers = CaseInsensitiveDict()
     headers["Apikey"] = token
     resp = requests.get(url, headers=headers)
     return resp
-
+# desbloquear a conta
 def desbloquearConta(acnt):
     url = "{}/definir/unlocked/{}/{}".format(dadosBaseUrl, nomeServidor, acnt)
     headers = CaseInsensitiveDict()

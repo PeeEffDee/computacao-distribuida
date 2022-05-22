@@ -17,6 +17,7 @@ log_file = open("log.txt", "w")
 log_file.writelines('TIMESTAMP NumOperacao IdServidorNegocio TipoOperacao Conta Valor \n')
 log_file.close()
 
+#obter token a partir de id_negoc e a senha que foi passado
 @app.route("/connect/<id_negoc>/<senha>", methods=["POST"])
 def connect(id_negoc, senha):
     for server in auth_server:
@@ -29,6 +30,7 @@ def connect(id_negoc, senha):
 # retorna -1 se a conta estiver travada por outro servidor de negócio 
 @app.route("/obter/saldo/<id_negoc>/<conta>")
 def getSaldo (id_negoc, conta):
+    # verificar se o servidor de negocio esta autenticado
     servidor_autenticado = authenticate(id_negoc, request.headers.get("Apikey"))
     if not servidor_autenticado:
         return '-1', 400
@@ -48,6 +50,7 @@ def getSaldo (id_negoc, conta):
 # retorna -1 se a conta estiver travada por outro servidor de negócio
 @app.route("/definir/saldo/<id_negoc>/<conta>/<valor>", methods=["POST"])
 def setSaldo (id_negoc, conta, valor):
+    # verificar se o servidor de negocio esta autenticado
     servidor_autenticado = authenticate(id_negoc, request.headers.get("Apikey"))
     if not servidor_autenticado:
         return '-1', 400
@@ -72,6 +75,7 @@ def setSaldo (id_negoc, conta, valor):
 # retorna -1 se a conta estiver travada por outro servidor de negócio
 @app.route("/obter/locked/<id_negoc>/<conta>")
 def getLock (id_negoc, conta):
+    # verificar se o servidor de negocio esta autenticado
     servidor_autenticado = authenticate(id_negoc, request.headers.get("Apikey"))
     if not servidor_autenticado:
         return jsonify({"message": "falha na autenticacao"}), 400
@@ -86,6 +90,7 @@ def getLock (id_negoc, conta):
 # retorna -1 se a conta estiver travada por outro servidor de negócio
 @app.route("/definir/unlocked/<id_negoc>/<conta>", methods=["POST"])
 def unLock (id_negoc, conta):
+    # verificar se o servidor de negocio esta autenticado
     servidor_autenticado = authenticate(id_negoc, request.headers.get("Apikey"))
     if not servidor_autenticado:
         return '-1', 400
@@ -99,6 +104,7 @@ def unLock (id_negoc, conta):
 
     return '-1', 400
 
+# verificar se o servidor de negocio e o token esta autorizado para realizar operacao
 def authenticate(id_negocio, token):
     for server in auth_server:
         if server['id'] == int(id_negocio):
@@ -106,6 +112,7 @@ def authenticate(id_negocio, token):
                 return True
     return False
 
+# funcao para registrar log
 def log(id_negoc, tipoOperacao, conta, valor):
     timestamp = datetime.datetime.now()
     global numOperacao
