@@ -15,10 +15,13 @@ token = None
 def deposito (acnt, amt):
     global token
     if token is None:
-        resp = requests.post("{}/connect/{}/{}".format(dadosBaseUrl, nomeServidor, senhaServidor))
-        token = resp.json()['token']
+        obterToken()
 
-    if verificarContaBloqueada(acnt):
+    if not token:
+        return jsonify({'message': 'Erro ao tentar obter o Token'}), 400
+    if verificarContaBloqueada(acnt).status_code == 400:
+        return jsonify(verificarContaBloqueada(acnt).json()), 400
+    elif bool(verificarContaBloqueada(acnt).json()["locked"]):
         return jsonify({'message': 'conta está bloqueada por outro servidor'}), 400
         
     url = "{}/definir/saldo/{}/{}/{}".format(dadosBaseUrl, nomeServidor, acnt, amt)
@@ -36,10 +39,13 @@ def deposito (acnt, amt):
 def saque (acnt, amt):
     global token
     if token is None:
-        resp = requests.post("{}/connect/{}/{}".format(dadosBaseUrl, nomeServidor, senhaServidor))
-        token = resp.json()['token']
+        obterToken()
 
-    if verificarContaBloqueada(acnt):
+    if not token:
+        return jsonify({'message': 'Erro ao tentar obter o Token'}), 400
+    if verificarContaBloqueada(acnt).status_code == 400:
+        return jsonify(verificarContaBloqueada(acnt).json()), 400
+    elif bool(verificarContaBloqueada(acnt).json()["locked"]):
         return jsonify({'message': 'conta está bloqueada por outro servidor'}), 400
 
     url = "{}/definir/saldo/{}/{}/{}".format(dadosBaseUrl, nomeServidor, acnt, '-'+str(amt))
@@ -48,7 +54,7 @@ def saque (acnt, amt):
     resp = requests.post(url, headers=headers)
     desbloquearConta(acnt)
     if resp.status_code != 200:
-        return 'erro ao realizar saque', 400
+        return jsonify({'message': 'Erro ao tentar realizar saque'}), 400
 
     response = jsonify({'message': 'saque de {} realizado com sucesso'.format(amt)}), 200
     return response
@@ -57,10 +63,13 @@ def saque (acnt, amt):
 def saldo (acnt):
     global token
     if token is None:
-        resp = requests.post("{}/connect/{}/{}".format(dadosBaseUrl, nomeServidor, senhaServidor))
-        token = resp.json()['token']
-    
-    if verificarContaBloqueada(acnt):
+        token = obterToken()
+
+    if not token:
+        return jsonify({'message': 'Erro ao tentar obter o Token'}), 400
+    if verificarContaBloqueada(acnt).status_code == 400:
+        return jsonify(verificarContaBloqueada(acnt).json()), 400
+    elif bool(verificarContaBloqueada(acnt).json()["locked"]):
         return jsonify({'message': 'conta está bloqueada por outro servidor'}), 400
 
     url = "{}/obter/saldo/{}/{}".format(dadosBaseUrl, nomeServidor, acnt)
@@ -78,12 +87,18 @@ def saldo (acnt):
 def transferencia(acnt_orig, acnt_dest, amt):
     global token
     if token is None:
-        resp = requests.post("{}/connect/{}/{}".format(dadosBaseUrl, nomeServidor, senhaServidor))
-        token = resp.json()['token']
-    
-    if verificarContaBloqueada(acnt_orig):
+        token = obterToken()
+
+    if not token:
+        return jsonify({'message': 'Erro ao tentar obter o Token'}), 400
+    if verificarContaBloqueada(acnt_orig).status_code == 400:
+        return jsonify(verificarContaBloqueada(acnt_orig).json()), 400
+    elif bool(verificarContaBloqueada(acnt_orig).json()["locked"]):
         return jsonify({'message': 'conta origem está bloqueada por outro servidor'}), 400
-    if verificarContaBloqueada(acnt_dest):
+
+    if verificarContaBloqueada(acnt_dest).status_code == 400:
+        return jsonify(verificarContaBloqueada(acnt_dest).json()), 400
+    elif bool(verificarContaBloqueada(acnt_dest).json()["locked"]):
         return jsonify({'message': 'conta destino está bloqueada por outro servidor'}), 400
 
     status = saque(acnt_orig, amt)[1]
@@ -104,26 +119,19 @@ def transferencia(acnt_orig, acnt_dest, amt):
 
 
 def obterToken():
-    global token
     resp = requests.post("{}/connect/{}/{}".format(dadosBaseUrl, nomeServidor, senhaServidor))
-    token = resp.json()['token']
+    if resp.status_code != 200:
+        return False
+    return resp.json()['token']
 
 def verificarContaBloqueada(acnt):
-    if token is None:
-        obterToken()
-
     url = "{}/obter/locked/{}/{}".format(dadosBaseUrl, nomeServidor, acnt)
     headers = CaseInsensitiveDict()
     headers["Apikey"] = token
     resp = requests.get(url, headers=headers)
-    if resp.status_code != 200:
-        return False
-    return bool(resp.json()['locked'])
+    return resp
 
 def desbloquearConta(acnt):
-    if token is None:
-        obterToken()
-
     url = "{}/definir/unlocked/{}/{}".format(dadosBaseUrl, nomeServidor, acnt)
     headers = CaseInsensitiveDict()
     headers["Apikey"] = token

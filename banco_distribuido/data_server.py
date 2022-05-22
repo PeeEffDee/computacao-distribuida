@@ -74,7 +74,7 @@ def setSaldo (id_negoc, conta, valor):
 def getLock (id_negoc, conta):
     servidor_autenticado = authenticate(id_negoc, request.headers.get("Apikey"))
     if not servidor_autenticado:
-        return '-1', 400
+        return jsonify({"message": "falha na autenticacao"}), 400
 
     for i in contas:
         if int(conta) == i['id']:
