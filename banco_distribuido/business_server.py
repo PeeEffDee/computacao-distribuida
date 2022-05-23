@@ -16,8 +16,8 @@ token = None
 def deposito (acnt, amt):
     global token
     if token is None:
-        obterToken()
-
+        token = obterToken()
+        
     if not token:
         return jsonify({'message': 'Erro ao tentar obter o Token'}), 400
     if verificarContaBloqueada(acnt).status_code == 400:
@@ -41,7 +41,7 @@ def deposito (acnt, amt):
 def saque (acnt, amt):
     global token
     if token is None:
-        obterToken()
+        token = obterToken()
 
     if not token:
         return jsonify({'message': 'Erro ao tentar obter o Token'}), 400
