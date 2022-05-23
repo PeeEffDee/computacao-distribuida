@@ -5,16 +5,12 @@ from requests.structures import CaseInsensitiveDict
 
 app = Flask(__name__)
 
-@app.route("/")
-def hello():
-    return "Hello World!"
-
 @app.route("/convertemoeda/<valor>")
 def convertemoeda(valor):
    url = "https://api.currencyapi.com/v3/latest?base_currency=BRL&currencies=EUR,USD"
 
    headers = CaseInsensitiveDict()
-   headers["apikey"] = ""
+   headers["apikey"] = "API_KEY"
 
    resp = requests.get(url, headers=headers)
 

@@ -95,6 +95,7 @@ def transferencia(acnt_orig, acnt_dest, amt):
 
     if not token:
         return jsonify({'message': 'Erro ao tentar obter o Token'}), 400
+
     if verificarContaBloqueada(acnt_orig).status_code == 400:
         return jsonify(verificarContaBloqueada(acnt_orig).json()), 400
     elif bool(verificarContaBloqueada(acnt_orig).json()["locked"]):
@@ -121,7 +122,6 @@ def transferencia(acnt_orig, acnt_dest, amt):
 
     return response
 
-
 def obterToken():
     resp = requests.post("{}/connect/{}/{}".format(dadosBaseUrl, nomeServidor, senhaServidor))
     if resp.status_code != 200:
@@ -135,6 +135,7 @@ def verificarContaBloqueada(acnt):
     headers["Apikey"] = token
     resp = requests.get(url, headers=headers)
     return resp
+
 # desbloquear a conta
 def desbloquearConta(acnt):
     url = "{}/definir/unlocked/{}/{}".format(dadosBaseUrl, nomeServidor, acnt)
