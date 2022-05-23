@@ -32,15 +32,17 @@ def transferencia(conta_orig, conta_dest, valor):
     resp = requests.post(url)
     return resp
 
-imprimir(deposito(1, 100))
 imprimir(saldo(1))
-imprimir(deposito(11, 100))
+imprimir(saldo(11))
+imprimir(deposito(11, 20))
+imprimir(deposito(1, 20))
 imprimir(saque(11, 1000))
+imprimir(saque(1, 2000))
 imprimir(saque(1, 1000))
-imprimir(saldo(1))
+imprimir(transferencia(2, 11, 500))
+imprimir(transferencia(11, 2, 500))
 imprimir(transferencia(1, 2, 500))
-imprimir(transferencia(1, 12, 10))
-imprimir(transferencia(1, 2, 10))
+imprimir(transferencia(2, 1, 500))
 imprimir(saldo(1))
 imprimir(saldo(2))
 

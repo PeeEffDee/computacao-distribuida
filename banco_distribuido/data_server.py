@@ -85,7 +85,7 @@ def getLock (id_negoc, conta):
             log(id_negoc, 'getLock', conta, 0)
             return jsonify({'locked': i['isLocked']})
 
-    return jsonify({'message': 'conta não existe'}), 400
+    return jsonify({'message': 'conta {} não existe'.format(conta)}), 400
 
 # retorna -1 se a conta estiver travada por outro servidor de negócio
 @app.route("/definir/unlocked/<id_negoc>/<conta>", methods=["POST"])

@@ -17,13 +17,13 @@ def deposito (acnt, amt):
     global token
     if token is None:
         token = obterToken()
-        
+
     if not token:
         return jsonify({'message': 'Erro ao tentar obter o Token'}), 400
     if verificarContaBloqueada(acnt).status_code == 400:
         return jsonify(verificarContaBloqueada(acnt).json()), 400
     elif bool(verificarContaBloqueada(acnt).json()["locked"]):
-        return jsonify({'message': 'conta está bloqueada por outro servidor'}), 400
+        return jsonify({'message': 'conta {} está bloqueada por outro servidor'.format(acnt)}), 400
         
     url = "{}/definir/saldo/{}/{}/{}".format(dadosBaseUrl, nomeServidor, acnt, amt)
     headers = CaseInsensitiveDict()
@@ -31,9 +31,9 @@ def deposito (acnt, amt):
     resp = requests.post(url, headers=headers)
     desbloquearConta(acnt)
     if resp.status_code != 200:
-        return 'erro ao realizar deposito', 400
+        return jsonify({'message': 'Erro ao tentar realizar deposito na conta {}'.format(acnt)}), 400
 
-    response = jsonify({'message': 'Deposito de {} realizado com sucesso'.format(amt)}), 200
+    response = jsonify({'message': 'Deposito de {} na conta {} realizado com sucesso'.format(amt, acnt)}), 200
     return response
 
 # realizar saque na conta com saldo disponivel
@@ -48,7 +48,7 @@ def saque (acnt, amt):
     if verificarContaBloqueada(acnt).status_code == 400:
         return jsonify(verificarContaBloqueada(acnt).json()), 400
     elif bool(verificarContaBloqueada(acnt).json()["locked"]):
-        return jsonify({'message': 'conta está bloqueada por outro servidor'}), 400
+        return jsonify({'message': 'conta {} está bloqueada por outro servidor'.format(acnt)}), 400
 
     url = "{}/definir/saldo/{}/{}/{}".format(dadosBaseUrl, nomeServidor, acnt, '-'+str(amt))
     headers = CaseInsensitiveDict()
@@ -56,7 +56,7 @@ def saque (acnt, amt):
     resp = requests.post(url, headers=headers)
     desbloquearConta(acnt)
     if resp.status_code != 200:
-        return jsonify({'message': 'Erro ao tentar realizar saque'}), 400
+        return jsonify({'message': 'Erro ao tentar realizar saque na conta {}'.format(acnt)}), 400
 
     response = jsonify({'message': 'saque de {} realizado com sucesso'.format(amt)}), 200
     return response
@@ -73,7 +73,7 @@ def saldo (acnt):
     if verificarContaBloqueada(acnt).status_code == 400:
         return jsonify(verificarContaBloqueada(acnt).json()), 400
     elif bool(verificarContaBloqueada(acnt).json()["locked"]):
-        return jsonify({'message': 'conta está bloqueada por outro servidor'}), 400
+        return jsonify({'message': 'conta {} está bloqueada por outro servidor'.format(acnt)}), 400
 
     url = "{}/obter/saldo/{}/{}".format(dadosBaseUrl, nomeServidor, acnt)
     headers = CaseInsensitiveDict()
@@ -81,7 +81,7 @@ def saldo (acnt):
     resp = requests.get(url, headers=headers)
     desbloquearConta(acnt)
     if resp.status_code != 200:
-        return jsonify({'message': 'erro ao obter saldo'}), 400
+        return jsonify({'message': 'Erro ao obter saldo na conta {}'.format(acnt)}), 400
     
     response = jsonify({'saldo': resp.json()['saldo']})
     return response
@@ -98,12 +98,12 @@ def transferencia(acnt_orig, acnt_dest, amt):
     if verificarContaBloqueada(acnt_orig).status_code == 400:
         return jsonify(verificarContaBloqueada(acnt_orig).json()), 400
     elif bool(verificarContaBloqueada(acnt_orig).json()["locked"]):
-        return jsonify({'message': 'conta origem está bloqueada por outro servidor'}), 400
+        return jsonify({'message': 'conta origem({}) está bloqueada por outro servidor'.format(acnt_orig)}), 400
 
     if verificarContaBloqueada(acnt_dest).status_code == 400:
         return jsonify(verificarContaBloqueada(acnt_dest).json()), 400
     elif bool(verificarContaBloqueada(acnt_dest).json()["locked"]):
-        return jsonify({'message': 'conta destino está bloqueada por outro servidor'}), 400
+        return jsonify({'message': 'conta destino({}) está bloqueada por outro servidor'.format(acnt_dest)}), 400
 
     status = saque(acnt_orig, amt)[1]
     if status != 200:
